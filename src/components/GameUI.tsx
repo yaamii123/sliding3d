@@ -6,7 +6,7 @@ import { useTimer } from '../hooks/useTimer.ts'
 import { formatSize } from '../utils/formatting.ts'
 import type { BestRecord, PuzzleSize } from '../types/puzzle.ts'
 import { BestTimes } from './BestTimes.tsx'
-import { Controls } from './Controls.tsx'
+import { ControlSettings, Controls } from './Controls.tsx'
 import { LayerMaps } from './LayerMaps.tsx'
 import type { ColorMode } from '../utils/pieceColor.ts'
 import { HelpPanel } from './HelpPanel.tsx'
@@ -35,6 +35,7 @@ export function GameUI({
 }: GameUIProps) {
   const compact = useCompactHud()
   const [layersOpen, setLayersOpen] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
   const elapsedMs = useTimer(puzzle.startedAt, puzzle.stoppedAt)
   const liveLabel =
     puzzle.status === 'solved'
@@ -42,7 +43,10 @@ export function GameUI({
       : `${formatSize(puzzle.size)}, ${puzzle.moveCount} moves`
 
   useEffect(() => {
-    if (!compact) setLayersOpen(false)
+    if (!compact) {
+      setLayersOpen(false)
+      setMoreOpen(false)
+    }
   }, [compact])
 
   return (
@@ -125,6 +129,46 @@ export function GameUI({
           document.body,
         )}
 
+      {compact &&
+        moreOpen &&
+        createPortal(
+          <>
+            <button
+              type="button"
+              className="help-backdrop"
+              aria-label="Close settings"
+              onClick={() => setMoreOpen(false)}
+            />
+            <div className="sheet" role="dialog" aria-label="Settings">
+              <div className="sheet-head">
+                <h2>More</h2>
+                <button type="button" className="sheet-close" onClick={() => setMoreOpen(false)}>
+                  Close
+                </button>
+              </div>
+              <ControlSettings
+                size={puzzle.size}
+                canUndo={puzzle.canUndo}
+                isSolving={puzzle.isSolving}
+                solverSupported={puzzle.solverSupported}
+                onSize={puzzle.setSize}
+                onNewGame={puzzle.newGame}
+                onScramble={puzzle.scramble}
+                onUndo={puzzle.undo}
+                onReset={puzzle.reset}
+                onHint={puzzle.hint}
+                onSolve={puzzle.solve}
+                onResetCamera={onResetCamera}
+                spread={spread}
+                onSpread={onSpread}
+                colorMode={colorMode}
+                onColorMode={onColorMode}
+              />
+            </div>
+          </>,
+          document.body,
+        )}
+
       <footer className="hud-bottom">
         <Controls
           size={puzzle.size}
@@ -143,8 +187,25 @@ export function GameUI({
           onSpread={onSpread}
           colorMode={colorMode}
           onColorMode={onColorMode}
+          compact={compact}
           layersOpen={layersOpen}
-          onLayers={() => setLayersOpen((open) => !open)}
+          onLayers={
+            compact
+              ? () => {
+                  setMoreOpen(false)
+                  setLayersOpen((open) => !open)
+                }
+              : undefined
+          }
+          moreOpen={moreOpen}
+          onMore={
+            compact
+              ? () => {
+                  setLayersOpen(false)
+                  setMoreOpen((open) => !open)
+                }
+              : undefined
+          }
         />
       </footer>
 
