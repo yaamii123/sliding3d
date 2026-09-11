@@ -226,7 +226,7 @@ export function Controls({
             className={moreOpen ? 'action active' : 'action'}
             onClick={onMore}
             aria-pressed={moreOpen}
-            aria-label={moreOpen ? 'Hide settings' : 'Show settings'}
+            aria-label={moreOpen ? 'Hide more' : 'Show more'}
           >
             More
           </button>

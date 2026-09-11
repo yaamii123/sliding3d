@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import type { PuzzleController } from '../hooks/usePuzzle.ts'
 import { useCompactHud } from '../hooks/useCompactHud.ts'
 import { useTimer } from '../hooks/useTimer.ts'
-import { formatSize } from '../utils/formatting.ts'
+import { formatSize, formatTime } from '../utils/formatting.ts'
 import type { BestRecord, PuzzleSize } from '../types/puzzle.ts'
 import { BestTimes } from './BestTimes.tsx'
 import { ControlSettings, Controls } from './Controls.tsx'
@@ -69,10 +69,33 @@ export function GameUI({
               <Timer elapsedMs={puzzle.status === 'solved' ? (puzzle.solvedTimeMs ?? elapsedMs) : elapsedMs} />
             </dd>
           </div>
-          <div>
-            <dt>Scramble</dt>
-            <dd>{puzzle.scrambleLength}</dd>
-          </div>
+          {compact ? (
+            <div>
+              <dt>Best</dt>
+              <dd>
+                <button
+                  type="button"
+                  className="stat-link"
+                  onClick={() => {
+                    setLayersOpen(false)
+                    setMoreOpen(true)
+                  }}
+                  aria-label={
+                    currentBest
+                      ? `Best for ${formatSize(puzzle.size)}: ${formatTime(currentBest.timeMs, true)}, ${currentBest.moves} moves. Open records.`
+                      : `No record yet for ${formatSize(puzzle.size)}. Open records.`
+                  }
+                >
+                  {currentBest ? formatTime(currentBest.timeMs) : '—'}
+                </button>
+              </dd>
+            </div>
+          ) : (
+            <div>
+              <dt>Scramble</dt>
+              <dd>{puzzle.scrambleLength}</dd>
+            </div>
+          )}
         </dl>
         <p className="status-line">
           {puzzle.status === 'solved' ? 'Solved' : puzzle.status === 'playing' ? 'In motion' : 'Ready'}
@@ -136,16 +159,17 @@ export function GameUI({
             <button
               type="button"
               className="help-backdrop"
-              aria-label="Close settings"
+              aria-label="Close more"
               onClick={() => setMoreOpen(false)}
             />
-            <div className="sheet" role="dialog" aria-label="Settings">
+            <div className="sheet" role="dialog" aria-label="More">
               <div className="sheet-head">
                 <h2>More</h2>
                 <button type="button" className="sheet-close" onClick={() => setMoreOpen(false)}>
                   Close
                 </button>
               </div>
+              <BestTimes size={puzzle.size} current={currentBest} combinations={records} />
               <ControlSettings
                 size={puzzle.size}
                 canUndo={puzzle.canUndo}

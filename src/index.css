@@ -141,6 +141,20 @@ h1 {
   font-size: 1.05rem;
 }
 
+.stat-link {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--gold-strong);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .status-line {
   margin: 0 0 6px;
   color: var(--muted);
@@ -376,6 +390,20 @@ kbd {
 
 .sheet .layer-maps-head h2 {
   display: none;
+}
+
+.sheet .best-times h2 {
+  margin-top: 0;
+}
+
+.sheet .best-times {
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.sheet .best-times ol {
+  max-height: none;
 }
 
 .help-copy {
