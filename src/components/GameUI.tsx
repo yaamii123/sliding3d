@@ -106,7 +106,13 @@ export function GameUI({
               aria-label="Close layer maps"
               onClick={() => setLayersOpen(false)}
             />
-            <div className="layer-sheet" role="dialog" aria-label="Layer maps">
+            <div className="sheet" role="dialog" aria-label="Layer maps">
+              <div className="sheet-head">
+                <h2>Layers</h2>
+                <button type="button" className="sheet-close" onClick={() => setLayersOpen(false)}>
+                  Close
+                </button>
+              </div>
               <LayerMaps
                 state={puzzle.state}
                 colorMode={colorMode}

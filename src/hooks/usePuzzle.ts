@@ -145,7 +145,7 @@ export function usePuzzle(): PuzzleController {
   const applyPlayerMove = useCallback((piece: number, options?: { fromSolver?: boolean }): boolean => {
     const current = sessionRef.current
     if (current.status === 'solved') return false
-    if (animatingRef.current && !options?.fromSolver) return false
+    if (solvingRef.current && !options?.fromSolver) return false
     const next = tryMovePiece(current.state, piece)
     if (!next) return false
 
@@ -241,7 +241,7 @@ export function usePuzzle(): PuzzleController {
   }, [cancelSolve, clearAnimTimers])
 
   const undo = useCallback(() => {
-    if (animatingRef.current || solvingRef.current) return
+    if (solvingRef.current) return
     const current = sessionRef.current
     if (current.status === 'solved') return
     const popped = popHistory(current.history)
@@ -365,7 +365,7 @@ export function usePuzzle(): PuzzleController {
     gameId: session.gameId,
     snapToken,
     usedSolver: session.usedSolver,
-    canUndo: session.status !== 'solved' && !isAnimating && !isSolving && historyCanUndo(session.history),
+    canUndo: session.status !== 'solved' && !isSolving && historyCanUndo(session.history),
     solverSupported: solverSupported(size) || session.moveCount === 0,
     movable,
     startedAt,

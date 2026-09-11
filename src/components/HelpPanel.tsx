@@ -18,8 +18,8 @@ export function HelpPanel() {
     savePrefs({ ...prefs, helpOpen: open })
   }, [compact, open])
 
-  const body = (
-    <div id="help-body" className="help-body">
+  const copy = (
+    <>
       <p>Slide cubes into the empty space.</p>
       <p>Any cube on the same row, column, or depth as the empty space can move. Cubes between it and the gap slide together.</p>
       <p>The solved cube reads left to right, top to bottom, back to front. 1 belongs in the tagged corner; the gap belongs in the opposite gold frame. Cubes glow when they sit in their home cell.</p>
@@ -35,6 +35,22 @@ export function HelpPanel() {
           <kbd>Space</kbd> scramble · <kbd>X</kbd> spread · <kbd>H</kbd> hint · <kbd>S</kbd> solve
         </li>
       </ul>
+    </>
+  )
+
+  const body = compact ? (
+    <div id="help-body" className="sheet" role="dialog" aria-label="How to play">
+      <div className="sheet-head">
+        <h2>How to play</h2>
+        <button type="button" className="sheet-close" onClick={() => setOpen(false)}>
+          Close
+        </button>
+      </div>
+      <div className="help-copy">{copy}</div>
+    </div>
+  ) : (
+    <div id="help-body" className="help-body">
+      {copy}
     </div>
   )
 
