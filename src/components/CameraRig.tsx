@@ -6,17 +6,18 @@ import { cameraLimits, defaultCameraPosition } from '../utils/coordinates.ts'
 
 interface CameraRigProps {
   size: number
+  gap: number
   resetRef: MutableRefObject<(() => void) | null>
 }
 
-export function CameraRig({ size, resetRef }: CameraRigProps) {
+export function CameraRig({ size, gap, resetRef }: CameraRigProps) {
   const controls = useRef<OrbitControlsImpl>(null)
   const camera = useThree((state) => state.camera)
-  const limits = cameraLimits(size)
+  const limits = cameraLimits(size, gap)
 
   useEffect(() => {
     const reset = () => {
-      const [x, y, z] = defaultCameraPosition(size)
+      const [x, y, z] = defaultCameraPosition(size, gap)
       camera.position.set(x, y, z)
       controls.current?.target.set(0, 0.05, 0)
       controls.current?.update()
@@ -26,7 +27,7 @@ export function CameraRig({ size, resetRef }: CameraRigProps) {
     return () => {
       if (resetRef.current === reset) resetRef.current = null
     }
-  }, [camera, resetRef, size])
+  }, [camera, resetRef, size, gap])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {

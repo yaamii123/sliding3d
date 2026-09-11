@@ -2,6 +2,12 @@ import type { Axis, Coord, PuzzleSize } from '../types/puzzle.ts'
 
 export const CELL_SIZE = 1
 export const CELL_GAP = 0.14
+/** Extra spacing so inner cubes on 4×4×4 / 5×5×5 can be seen and clicked. */
+export const SPREAD_GAP = 0.7
+
+export function cellGap(spread: boolean): number {
+  return spread ? SPREAD_GAP : CELL_GAP
+}
 
 export function volume(size: PuzzleSize): number {
   return size * size * size
@@ -9,13 +15,15 @@ export function volume(size: PuzzleSize): number {
 
 export function indexToCoord(index: number, size: number): Coord {
   const x = index % size
-  const y = Math.floor(index / size) % size
+  const rowFromTop = Math.floor(index / size) % size
+  const y = size - 1 - rowFromTop
   const z = Math.floor(index / (size * size))
   return { x, y, z }
 }
 
 export function coordToIndex(x: number, y: number, z: number, size: number): number {
-  return x + y * size + z * size * size
+  const rowFromTop = size - 1 - y
+  return x + rowFromTop * size + z * size * size
 }
 
 export function inBounds(x: number, y: number, z: number, size: number): boolean {
@@ -77,15 +85,19 @@ export function puzzleExtent(size: number, cellSize = CELL_SIZE, gap = CELL_GAP)
   return size * cellSize + (size - 1) * gap
 }
 
-export function defaultCameraPosition(size: number): [number, number, number] {
-  const dist = puzzleExtent(size) * 1.85 + 1.8
+export function defaultCameraPosition(size: number, gap = CELL_GAP): [number, number, number] {
+  const dist = puzzleExtent(size, CELL_SIZE, gap) * 1.85 + 1.8
   return [dist * 0.86, dist * 0.68, dist * 1.02]
 }
 
-export function cameraLimits(size: number): { minDistance: number; maxDistance: number } {
-  const extent = puzzleExtent(size)
+export function cameraLimits(
+  size: number,
+  gap = CELL_GAP,
+): { minDistance: number; maxDistance: number } {
+  const packed = puzzleExtent(size)
+  const extent = puzzleExtent(size, CELL_SIZE, gap)
   return {
-    minDistance: Math.max(2.4, extent * 1.15),
+    minDistance: Math.max(2.4, packed * 1.15),
     maxDistance: Math.max(14, extent * 6.2),
   }
 }

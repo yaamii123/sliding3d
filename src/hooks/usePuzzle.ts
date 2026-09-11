@@ -348,8 +348,8 @@ export function usePuzzle(): PuzzleController {
   }, [clearAnimTimers])
 
   const movable = useMemo(
-    () => (session.status === 'solved' || isAnimating ? [] : movablePieces(session.state)),
-    [isAnimating, session.state, session.status],
+    () => (session.status === 'solved' ? [] : movablePieces(session.state)),
+    [session.state, session.status],
   )
 
   return {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createSolvedState, isSolved, manhattanSum, statesEqual } from './puzzleState.ts'
-import { applyMove, canMovePiece, getValidMoves, tryMovePiece } from './puzzleMoves.ts'
+import { applyMove, canMovePiece, getValidMoves, movablePieces, tryMovePiece } from './puzzleMoves.ts'
 import { coordToIndex, indexToCoord } from '../utils/coordinates.ts'
 
 describe('solved-state detection', () => {
@@ -35,7 +35,7 @@ describe('3D movement', () => {
   it('allows moves along X, Y, and Z from the solved empty corner', () => {
     const state = createSolvedState(3)
     const empty = indexToCoord(state.emptyIndex, 3)
-    expect(empty).toEqual({ x: 2, y: 2, z: 2 })
+    expect(empty).toEqual({ x: 2, y: 0, z: 2 })
     const axes = new Set(getValidMoves(state).map((move) => move.axis))
     expect(axes).toEqual(new Set(['x', 'y', 'z']))
     expect(getValidMoves(state)).toHaveLength(3)
@@ -70,21 +70,21 @@ describe('3D movement', () => {
 
   it('slides every cube on the same axis toward the empty cell', () => {
     const start = createSolvedState(3)
-    // Empty is (2,2,2). Piece 25 sits at (0,2,2) — two cells away on X.
+    // Empty is (2,0,2). Piece 25 sits at (0,0,2) — two cells away on X.
     const farX = tryMovePiece(start, 25)
     expect(farX).not.toBeNull()
-    expect(farX!.emptyIndex).toBe(coordToIndex(0, 2, 2, 3))
-    expect(farX!.tiles[coordToIndex(1, 2, 2, 3)]).toBe(25)
-    expect(farX!.tiles[coordToIndex(2, 2, 2, 3)]).toBe(26)
-    expect(farX!.tiles[coordToIndex(0, 2, 2, 3)]).toBe(0)
+    expect(farX!.emptyIndex).toBe(coordToIndex(0, 0, 2, 3))
+    expect(farX!.tiles[coordToIndex(1, 0, 2, 3)]).toBe(25)
+    expect(farX!.tiles[coordToIndex(2, 0, 2, 3)]).toBe(26)
+    expect(farX!.tiles[coordToIndex(0, 0, 2, 3)]).toBe(0)
 
     const farY = tryMovePiece(start, 21)
     expect(farY).not.toBeNull()
-    expect(farY!.emptyIndex).toBe(coordToIndex(2, 0, 2, 3))
+    expect(farY!.emptyIndex).toBe(coordToIndex(2, 2, 2, 3))
 
     const farZ = tryMovePiece(start, 9)
     expect(farZ).not.toBeNull()
-    expect(farZ!.emptyIndex).toBe(coordToIndex(2, 2, 0, 3))
+    expect(farZ!.emptyIndex).toBe(coordToIndex(2, 0, 0, 3))
   })
 
   it('is equivalent to several adjacent slides along that axis', () => {
@@ -100,6 +100,7 @@ describe('3D movement', () => {
     expect(unitC).not.toBeNull()
     expect(unitC!.tiles).toEqual(line!.tiles)
     expect(unitC!.emptyIndex).toBe(line!.emptyIndex)
+    expect(movablePieces(line!).length).toBeGreaterThan(0)
   })
 
   it('rejects cubes that do not share an axis with the empty cell', () => {

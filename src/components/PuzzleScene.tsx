@@ -2,7 +2,8 @@ import type { MutableRefObject } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
 import type { PuzzleState } from '../types/puzzle.ts'
-import { defaultCameraPosition } from '../utils/coordinates.ts'
+import type { ColorMode } from '../utils/pieceColor.ts'
+import { cellGap, defaultCameraPosition } from '../utils/coordinates.ts'
 import { CameraRig } from './CameraRig.tsx'
 import { PuzzleBoard } from './PuzzleBoard.tsx'
 import { SceneLights } from './SceneLights.tsx'
@@ -14,6 +15,8 @@ interface PuzzleSceneProps {
   solved: boolean
   snapToken: number
   gameId: number
+  spread: boolean
+  colorMode: ColorMode
   onMove: (piece: number) => void
   cameraResetRef: MutableRefObject<(() => void) | null>
 }
@@ -25,10 +28,13 @@ export function PuzzleScene({
   solved,
   snapToken,
   gameId,
+  spread,
+  colorMode,
   onMove,
   cameraResetRef,
 }: PuzzleSceneProps) {
-  const [cx, cy, cz] = defaultCameraPosition(state.size)
+  const gap = cellGap(spread)
+  const [cx, cy, cz] = defaultCameraPosition(state.size, gap)
   const cameraDist = Math.hypot(cx, cy, cz)
 
   return (
@@ -47,7 +53,7 @@ export function PuzzleScene({
     >
       <color attach="background" args={['#0b0d12']} />
       <fog attach="fog" args={['#0b0d12', cameraDist * 0.72, cameraDist * 2.35]} />
-      <SceneLights size={state.size} />
+      <SceneLights size={state.size} gap={gap} />
       <PuzzleBoard
         key={gameId}
         state={state}
@@ -55,9 +61,11 @@ export function PuzzleScene({
         hintPiece={hintPiece}
         solved={solved}
         snapToken={snapToken}
+        gap={gap}
+        colorMode={colorMode}
         onMove={onMove}
       />
-      <CameraRig size={state.size} resetRef={cameraResetRef} />
+      <CameraRig size={state.size} gap={gap} resetRef={cameraResetRef} />
     </Canvas>
   )
 }

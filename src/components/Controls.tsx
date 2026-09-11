@@ -1,6 +1,7 @@
 import type { PuzzleSize } from '../types/puzzle.ts'
 import { PUZZLE_SIZES } from '../types/puzzle.ts'
 import { formatSize } from '../utils/formatting.ts'
+import { COLOR_MODES, type ColorMode } from '../utils/pieceColor.ts'
 
 interface ControlsProps {
   size: PuzzleSize
@@ -15,6 +16,12 @@ interface ControlsProps {
   onHint: () => void
   onSolve: () => void
   onResetCamera: () => void
+  spread: boolean
+  onSpread: () => void
+  colorMode: ColorMode
+  onColorMode: (mode: ColorMode) => void
+  layersOpen?: boolean
+  onLayers?: () => void
 }
 
 export function Controls({
@@ -30,6 +37,12 @@ export function Controls({
   onHint,
   onSolve,
   onResetCamera,
+  spread,
+  onSpread,
+  colorMode,
+  onColorMode,
+  layersOpen = false,
+  onLayers,
 }: ControlsProps) {
   return (
     <div className="controls">
@@ -47,11 +60,26 @@ export function Controls({
           </button>
         ))}
       </div>
+      <div className="control-group" role="group" aria-label="Cube colors">
+        {COLOR_MODES.map((mode) => (
+          <button
+            key={mode.id}
+            type="button"
+            className={mode.id === colorMode ? 'chip active' : 'chip'}
+            aria-pressed={mode.id === colorMode}
+            aria-label={mode.hint}
+            title={mode.hint}
+            onClick={() => onColorMode(mode.id)}
+          >
+            {mode.label}
+          </button>
+        ))}
+      </div>
       <div className="control-group actions" role="group" aria-label="Game actions">
         <button type="button" className="action primary" onClick={onNewGame}>
           New Game
         </button>
-        <button type="button" className="action" onClick={onScramble}>
+        <button type="button" className="action hide-narrow" onClick={onScramble}>
           Scramble
         </button>
         <button type="button" className="action" onClick={onUndo} disabled={!canUndo}>
@@ -80,6 +108,27 @@ export function Controls({
         <button type="button" className="action" onClick={onResetCamera} aria-label="Reset camera">
           Camera
         </button>
+        <button
+          type="button"
+          className={spread ? 'action active' : 'action'}
+          onClick={onSpread}
+          aria-pressed={spread}
+          aria-label={spread ? 'Pack cubes together' : 'Spread cubes apart to reach inner layers'}
+          title="Pull cubes apart so inner layers can be seen and clicked (X)"
+        >
+          Spread
+        </button>
+        {onLayers ? (
+          <button
+            type="button"
+            className={layersOpen ? 'action active show-narrow' : 'action show-narrow'}
+            onClick={onLayers}
+            aria-pressed={layersOpen}
+            aria-label={layersOpen ? 'Hide layer maps' : 'Show layer maps'}
+          >
+            Layers
+          </button>
+        ) : null}
       </div>
     </div>
   )

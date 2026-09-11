@@ -8,6 +8,7 @@ interface GameControlHandlers {
   resetCamera: () => void
   hint: () => void
   solve: () => void
+  toggleSpread: () => void
 }
 
 function isTypingTarget(target: EventTarget | null): boolean {
@@ -59,6 +60,10 @@ export function useGameControls(handlers: GameControlHandlers): void {
         case 's':
         case 'S':
           actions.solve()
+          break
+        case 'x':
+        case 'X':
+          actions.toggleSpread()
           break
         default:
           break

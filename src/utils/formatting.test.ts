@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { formatSize, formatTime, capitalize } from '../utils/formatting.ts'
-import { indexToCoord, coordToIndex, isFaceAdjacent, sharedAxis, worldPosition } from '../utils/coordinates.ts'
+import {
+  indexToCoord,
+  coordToIndex,
+  isFaceAdjacent,
+  sharedAxis,
+  worldPosition,
+  cellGap,
+  CELL_GAP,
+  SPREAD_GAP,
+} from '../utils/coordinates.ts'
 import { createRng, pick } from '../utils/random.ts'
 
 describe('formatting', () => {
@@ -17,6 +26,13 @@ describe('formatting', () => {
 })
 
 describe('coordinates', () => {
+  it('numbers rows from top to bottom, then back to front', () => {
+    expect(indexToCoord(0, 3)).toEqual({ x: 0, y: 2, z: 0 })
+    expect(indexToCoord(2, 3)).toEqual({ x: 2, y: 2, z: 0 })
+    expect(indexToCoord(6, 3)).toEqual({ x: 0, y: 0, z: 0 })
+    expect(indexToCoord(26, 3)).toEqual({ x: 2, y: 0, z: 2 })
+  })
+
   it('round-trips indices for a 4×4×4 cube', () => {
     for (let i = 0; i < 64; i++) {
       const coord = indexToCoord(i, 4)
@@ -45,6 +61,12 @@ describe('coordinates', () => {
     expect(sharedAxis({ x: 2, y: 2, z: 0 }, { x: 2, y: 2, z: 2 })).toBe('z')
     expect(sharedAxis({ x: 0, y: 0, z: 0 }, { x: 2, y: 2, z: 2 })).toBeNull()
     expect(sharedAxis({ x: 1, y: 1, z: 0 }, { x: 1, y: 2, z: 1 })).toBeNull()
+  })
+
+  it('widens cell gaps in spread view', () => {
+    expect(cellGap(false)).toBe(CELL_GAP)
+    expect(cellGap(true)).toBe(SPREAD_GAP)
+    expect(SPREAD_GAP).toBeGreaterThan(CELL_GAP)
   })
 
   it('centers the puzzle on the origin', () => {

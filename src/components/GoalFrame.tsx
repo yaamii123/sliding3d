@@ -2,16 +2,19 @@ import { useMemo } from 'react'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import type { PuzzleSize } from '../types/puzzle.ts'
-import { puzzleExtent, worldPosition } from '../utils/coordinates.ts'
+import { indexToCoord, puzzleExtent, worldPosition } from '../utils/coordinates.ts'
+
+function skipRaycast() {}
 
 interface GoalFrameProps {
   size: PuzzleSize
+  gap: number
 }
 
-export function GoalFrame({ size }: GoalFrameProps) {
-  const extent = puzzleExtent(size)
-  const home1 = worldPosition({ x: 0, y: 0, z: 0 }, size)
-  const homeEmpty = worldPosition({ x: size - 1, y: size - 1, z: size - 1 }, size)
+export function GoalFrame({ size, gap }: GoalFrameProps) {
+  const extent = puzzleExtent(size, undefined, gap)
+  const home1 = worldPosition(indexToCoord(0, size), size, undefined, gap)
+  const homeEmpty = worldPosition(indexToCoord(size ** 3 - 1, size), size, undefined, gap)
   const box = useMemo(() => new THREE.BoxGeometry(extent + 0.08, extent + 0.08, extent + 0.08), [extent])
   const edges = useMemo(() => new THREE.EdgesGeometry(box), [box])
   const slot = useMemo(() => new THREE.BoxGeometry(0.98, 0.98, 0.98), [])
@@ -41,7 +44,7 @@ export function GoalFrame({ size }: GoalFrameProps) {
 
       <group position={home1}>
         <Arrow color="#e8a07a" direction={[1, 0, 0]} length={axis} />
-        <Arrow color="#9ed4a8" direction={[0, 1, 0]} length={axis} />
+        <Arrow color="#9ed4a8" direction={[0, -1, 0]} length={axis} />
         <Arrow color="#8ecae6" direction={[0, 0, 1]} length={axis} />
       </group>
     </group>
@@ -65,11 +68,11 @@ function Arrow({
 
   return (
     <group quaternion={quat}>
-      <mesh position={[0, length / 2, 0]}>
+      <mesh position={[0, length / 2, 0]} raycast={skipRaycast}>
         <cylinderGeometry args={[0.018, 0.018, length, 6]} />
         <meshBasicMaterial color={color} />
       </mesh>
-      <mesh position={[0, length, 0]}>
+      <mesh position={[0, length, 0]} raycast={skipRaycast}>
         <coneGeometry args={[0.045, 0.12, 8]} />
         <meshBasicMaterial color={color} />
       </mesh>

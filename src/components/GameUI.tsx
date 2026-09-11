@@ -1,10 +1,14 @@
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { PuzzleController } from '../hooks/usePuzzle.ts'
+import { useCompactHud } from '../hooks/useCompactHud.ts'
 import { useTimer } from '../hooks/useTimer.ts'
 import { formatSize } from '../utils/formatting.ts'
 import type { BestRecord, PuzzleSize } from '../types/puzzle.ts'
 import { BestTimes } from './BestTimes.tsx'
 import { Controls } from './Controls.tsx'
-import { GoalLegend } from './GoalLegend.tsx'
+import { LayerMaps } from './LayerMaps.tsx'
+import type { ColorMode } from '../utils/pieceColor.ts'
 import { HelpPanel } from './HelpPanel.tsx'
 import { Timer } from './Timer.tsx'
 
@@ -13,14 +17,33 @@ interface GameUIProps {
   records: Array<{ size: PuzzleSize; record?: BestRecord }>
   currentBest?: BestRecord
   onResetCamera: () => void
+  spread: boolean
+  onSpread: () => void
+  colorMode: ColorMode
+  onColorMode: (mode: ColorMode) => void
 }
 
-export function GameUI({ puzzle, records, currentBest, onResetCamera }: GameUIProps) {
+export function GameUI({
+  puzzle,
+  records,
+  currentBest,
+  onResetCamera,
+  spread,
+  onSpread,
+  colorMode,
+  onColorMode,
+}: GameUIProps) {
+  const compact = useCompactHud()
+  const [layersOpen, setLayersOpen] = useState(false)
   const elapsedMs = useTimer(puzzle.startedAt, puzzle.stoppedAt)
   const liveLabel =
     puzzle.status === 'solved'
       ? `Puzzle solved in ${puzzle.solvedMoves ?? puzzle.moveCount} moves`
       : `${formatSize(puzzle.size)}, ${puzzle.moveCount} moves`
+
+  useEffect(() => {
+    if (!compact) setLayersOpen(false)
+  }, [compact])
 
   return (
     <div className="hud">
@@ -51,7 +74,8 @@ export function GameUI({ puzzle, records, currentBest, onResetCamera }: GameUIPr
           {puzzle.status === 'solved' ? 'Solved' : puzzle.status === 'playing' ? 'In motion' : 'Ready'}
         </p>
         <p className="orientation-line">
-          1 lives in the tagged corner. The gold frame is where the gap belongs. Cubes glow when they are home.
+          Gold-rimmed cubes share an axis with the gap and can be clicked. Use the layer maps to see every slice, or orbit
+          and spread in 3D.
         </p>
         <div className="sr-only" aria-live="polite">
           {liveLabel}
@@ -59,10 +83,41 @@ export function GameUI({ puzzle, records, currentBest, onResetCamera }: GameUIPr
         <HelpPanel />
       </header>
 
-      <aside className="hud-card hud-right">
-        <GoalLegend size={puzzle.size} />
-        <BestTimes size={puzzle.size} current={currentBest} combinations={records} />
-      </aside>
+      {!compact && (
+        <aside className="hud-card hud-right">
+          <LayerMaps
+            state={puzzle.state}
+            colorMode={colorMode}
+            movable={puzzle.movable}
+            hintPiece={puzzle.hintPiece}
+            onMove={puzzle.tryMove}
+          />
+          <BestTimes size={puzzle.size} current={currentBest} combinations={records} />
+        </aside>
+      )}
+
+      {compact &&
+        layersOpen &&
+        createPortal(
+          <>
+            <button
+              type="button"
+              className="help-backdrop"
+              aria-label="Close layer maps"
+              onClick={() => setLayersOpen(false)}
+            />
+            <div className="layer-sheet" role="dialog" aria-label="Layer maps">
+              <LayerMaps
+                state={puzzle.state}
+                colorMode={colorMode}
+                movable={puzzle.movable}
+                hintPiece={puzzle.hintPiece}
+                onMove={puzzle.tryMove}
+              />
+            </div>
+          </>,
+          document.body,
+        )}
 
       <footer className="hud-bottom">
         <Controls
@@ -78,6 +133,12 @@ export function GameUI({ puzzle, records, currentBest, onResetCamera }: GameUIPr
           onHint={puzzle.hint}
           onSolve={puzzle.solve}
           onResetCamera={onResetCamera}
+          spread={spread}
+          onSpread={onSpread}
+          colorMode={colorMode}
+          onColorMode={onColorMode}
+          layersOpen={layersOpen}
+          onLayers={() => setLayersOpen((open) => !open)}
         />
       </footer>
 

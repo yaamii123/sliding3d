@@ -3,7 +3,8 @@ import { indexToCoord, volume } from '../utils/coordinates.ts'
 
 /**
  * Solved configuration: tiles 1..N³-1 in index order, empty (0) at the last cell.
- * Example 3×3×3: 1,2,3,...,26, EMPTY at (2,2,2).
+ * Rows run left to right, top to bottom; layers back to front.
+ * Example 3×3×3: 1 is at top-left-back, EMPTY at bottom-right-front.
  */
 export function createSolvedState(size: PuzzleSize): PuzzleState {
   const n = volume(size)

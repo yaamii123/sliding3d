@@ -1,11 +1,13 @@
 import type { BestRecord, PuzzleSize } from '../types/puzzle.ts'
 import { PUZZLE_SIZES } from '../types/puzzle.ts'
+import { DEFAULT_COLOR_MODE, isColorMode, type ColorMode } from './pieceColor.ts'
 
 const KEY = '3d-sliding-puzzle-v2'
 
 export interface PersistedPrefs {
   size: PuzzleSize
   helpOpen: boolean
+  colorMode: ColorMode
 }
 
 interface PersistedStore {
@@ -16,6 +18,7 @@ interface PersistedStore {
 const DEFAULT_PREFS: PersistedPrefs = {
   size: 3,
   helpOpen: true,
+  colorMode: DEFAULT_COLOR_MODE,
 }
 
 function isSize(value: unknown): value is PuzzleSize {
@@ -35,8 +38,11 @@ function readStore(): PersistedStore {
     const helpOpen = typeof parsed.prefs?.helpOpen === 'boolean'
       ? parsed.prefs.helpOpen
       : DEFAULT_PREFS.helpOpen
+    const colorMode = isColorMode(parsed.prefs?.colorMode)
+      ? parsed.prefs.colorMode
+      : DEFAULT_PREFS.colorMode
     return {
-      prefs: { size, helpOpen },
+      prefs: { size, helpOpen, colorMode },
       best: parsed.best && typeof parsed.best === 'object' ? parsed.best : {},
     }
   } catch {

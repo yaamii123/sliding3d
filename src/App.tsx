@@ -5,15 +5,36 @@ import { PuzzleScene } from './components/PuzzleScene.tsx'
 import { useBestTimes } from './hooks/useBestTimes.ts'
 import { useGameControls } from './hooks/useGameControls.ts'
 import { usePuzzle } from './hooks/usePuzzle.ts'
+import { DEFAULT_COLOR_MODE, type ColorMode } from './utils/pieceColor.ts'
+import { loadPrefs, savePrefs } from './utils/storage.ts'
 
 export default function App() {
   const puzzle = usePuzzle()
   const { combinations, lookup } = useBestTimes(puzzle.status === 'solved' ? puzzle.gameId + 1 : puzzle.gameId)
   const cameraResetRef = useRef<(() => void) | null>(null)
   const [showComplete, setShowComplete] = useState(false)
+  const [spread, setSpread] = useState(() => puzzle.size >= 4)
+  const [spreadSize, setSpreadSize] = useState(puzzle.size)
+  if (puzzle.size !== spreadSize) {
+    setSpreadSize(puzzle.size)
+    setSpread(puzzle.size >= 4)
+  }
+
+  const [colorMode, setColorMode] = useState<ColorMode>(
+    () => loadPrefs().colorMode ?? DEFAULT_COLOR_MODE,
+  )
 
   const resetCamera = useCallback(() => {
     cameraResetRef.current?.()
+  }, [])
+
+  const toggleSpread = useCallback(() => {
+    setSpread((value) => !value)
+  }, [])
+
+  const changeColorMode = useCallback((mode: ColorMode) => {
+    setColorMode(mode)
+    savePrefs({ ...loadPrefs(), colorMode: mode })
   }, [])
 
   useGameControls({
@@ -24,6 +45,7 @@ export default function App() {
     resetCamera,
     hint: puzzle.hint,
     solve: puzzle.solve,
+    toggleSpread,
   })
 
   useEffect(() => {
@@ -44,6 +66,8 @@ export default function App() {
           solved={puzzle.status === 'solved'}
           snapToken={puzzle.snapToken}
           gameId={puzzle.gameId}
+          spread={spread}
+          colorMode={colorMode}
           onMove={puzzle.tryMove}
           cameraResetRef={cameraResetRef}
         />
@@ -53,6 +77,10 @@ export default function App() {
         records={combinations}
         currentBest={lookup(puzzle.size)}
         onResetCamera={resetCamera}
+        spread={spread}
+        onSpread={toggleSpread}
+        colorMode={colorMode}
+        onColorMode={changeColorMode}
       />
       {showComplete && puzzle.solvedMoves !== null && puzzle.solvedTimeMs !== null && (
         <CompletionModal

@@ -2,10 +2,11 @@ import { puzzleExtent } from '../utils/coordinates.ts'
 
 interface SceneLightsProps {
   size: number
+  gap: number
 }
 
-export function SceneLights({ size }: SceneLightsProps) {
-  const extent = puzzleExtent(size)
+export function SceneLights({ size, gap }: SceneLightsProps) {
+  const extent = puzzleExtent(size, undefined, gap)
   const floorY = -extent / 2 - 0.62
 
   return (

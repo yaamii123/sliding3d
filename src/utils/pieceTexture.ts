@@ -1,34 +1,8 @@
 import * as THREE from 'three'
-import type { PuzzleSize } from '../types/puzzle.ts'
-import { solvedCoordForPiece } from './coordinates.ts'
+
+export { homeColor, layerColor } from './pieceColor.ts'
 
 const cache = new Map<string, THREE.CanvasTexture>()
-
-function clampByte(value: number): number {
-  return Math.min(255, Math.max(0, Math.round(value)))
-}
-
-function hexColor(r: number, g: number, b: number): string {
-  return `#${[r, g, b].map((channel) => clampByte(channel).toString(16).padStart(2, '0')).join('')}`
-}
-
-/**
- * Pastel RGB cube: X warms the color, Y lightens it, Z cools it toward sky.
- * That makes home position readable as a 3D gradient, not only a layer tint.
- */
-export function homeColor(piece: number, size: PuzzleSize): string {
-  const { x, y, z } = solvedCoordForPiece(piece, size)
-  const max = Math.max(1, size - 1)
-  const tx = x / max
-  const ty = y / max
-  const tz = z / max
-  const r = 236 - 28 * tz + 18 * tx
-  const g = 168 + 58 * ty - 22 * tz
-  const b = 128 + 92 * tz - 16 * tx
-  return hexColor(r, g, b)
-}
-
-export const layerColor = homeColor
 
 export function getNumberTexture(piece: number): THREE.CanvasTexture {
   const key = `n:${piece}`

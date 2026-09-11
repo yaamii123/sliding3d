@@ -5,18 +5,21 @@ import { MOVE_DURATION_S } from '../game/constants.ts'
 import type { PuzzleSize, PuzzleState } from '../types/puzzle.ts'
 import { indexToCoord, worldPosition } from '../utils/coordinates.ts'
 
+function skipRaycast() {}
+
 interface EmptyCellProps {
   state: PuzzleState
   snapToken: number
+  gap: number
 }
 
 function easeOutCubic(t: number): number {
   return 1 - (1 - t) ** 3
 }
 
-export function EmptyCell({ state, snapToken }: EmptyCellProps) {
+export function EmptyCell({ state, snapToken, gap }: EmptyCellProps) {
   const size = state.size as PuzzleSize
-  const start = worldPosition(indexToCoord(state.emptyIndex, size), size)
+  const start = worldPosition(indexToCoord(state.emptyIndex, size), size, undefined, gap)
   const group = useRef<THREE.Group>(null)
   const from = useRef(new THREE.Vector3(...start))
   const to = useRef(new THREE.Vector3(...start))
@@ -26,7 +29,7 @@ export function EmptyCell({ state, snapToken }: EmptyCellProps) {
   const edges = useMemo(() => new THREE.EdgesGeometry(box), [box])
 
   useLayoutEffect(() => {
-    const next = new THREE.Vector3(...worldPosition(indexToCoord(state.emptyIndex, size), size))
+    const next = new THREE.Vector3(...worldPosition(indexToCoord(state.emptyIndex, size), size, undefined, gap))
     const node = group.current
     if (!node) return
     if (snapToken !== lastSnap.current) {
@@ -40,7 +43,7 @@ export function EmptyCell({ state, snapToken }: EmptyCellProps) {
     from.current.copy(node.position)
     to.current.copy(next)
     progress.current = 0
-  }, [size, snapToken, state.emptyIndex])
+  }, [size, snapToken, state.emptyIndex, gap])
 
   useFrame((_, delta) => {
     const node = group.current
@@ -53,11 +56,11 @@ export function EmptyCell({ state, snapToken }: EmptyCellProps) {
 
   return (
     <group ref={group} position={start}>
-      <mesh geometry={box}>
-        <meshBasicMaterial color="#8ea3c4" transparent opacity={0.07} depthWrite={false} />
+      <mesh geometry={box} renderOrder={2} raycast={skipRaycast}>
+        <meshBasicMaterial color="#d7e6ff" transparent opacity={0.16} depthWrite={false} />
       </mesh>
-      <lineSegments geometry={edges}>
-        <lineBasicMaterial color="#9cb3d1" transparent opacity={0.4} />
+      <lineSegments geometry={edges} renderOrder={3} raycast={skipRaycast}>
+        <lineBasicMaterial color="#f0d7a2" transparent opacity={0.85} />
       </lineSegments>
     </group>
   )
